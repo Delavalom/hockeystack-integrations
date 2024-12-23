@@ -36,6 +36,19 @@ const DomainSchema = new Schema({
       required: true
     }
   },
+  meeting: {
+    title: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      required: true
+    },
+    contacts: [{
+      type: String,
+    }],
+  },
   apiKey: {
     type: String,
     required: true
@@ -69,7 +82,11 @@ const DomainSchema = new Schema({
           deals: {
             type: Date,
             default: moment().subtract(4, 'year').toISOString()
-          }
+          },
+          meetings: {
+            type: Date,
+            default: moment().subtract(4, 'year').toISOString()
+          },
         }
       }]
     }

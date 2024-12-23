@@ -60,7 +60,7 @@ const refreshAccessToken = async (domain, hubId, tryCount) => {
  */
 const processMeetings = async (domain, hubId, q) => {
   const account = domain.integrations.hubspot.accounts.find(account => account.hubId === hubId);
-  const lastPulledDate = new Date(account.lastPulledDates.companies);
+  const lastPulledDate = new Date(account.lastPulledDates.meetings);
   const now = new Date();
 
   let hasMore = true;
@@ -74,14 +74,9 @@ const processMeetings = async (domain, hubId, q) => {
       filterGroups: [lastModifiedDateFilter],
       sorts: [{ propertyName: 'hs_lastmodifieddate', direction: 'ASCENDING' }],
       properties: [
-        'name',
-        'domain',
-        'country',
-        'industry',
-        'description',
-        'annualrevenue',
-        'numberofemployees',
-        'hs_lead_status'
+        'title',
+        'timestamp',
+        'contacts'
       ],
       limit,
       after: offsetObject.after
@@ -108,25 +103,24 @@ const processMeetings = async (domain, hubId, q) => {
     const data = searchResult?.results || [];
     offsetObject.after = parseInt(searchResult?.paging?.next?.after);
 
-    console.log('fetch company batch');
+    console.log('fetch meeting batch');
 
-    data.forEach(company => {
-      if (!company.properties) return;
+    data.forEach(meeting => {
+      if (!meeting.properties) return;
 
       const actionTemplate = {
         includeInAnalytics: 0,
-        companyProperties: {
-          company_id: company.id,
-          company_domain: company.properties.domain,
-          company_industry: company.properties.industry
+        meetingProperties: {
+          meeting_id: meeting.id,
+          meeting_domain: meeting.properties.domain,
         }
       };
 
-      const isCreated = !lastPulledDate || (new Date(company.createdAt) > lastPulledDate);
+      const isCreated = !lastPulledDate || (new Date(meeting.createdAt) > lastPulledDate);
 
       q.push({
-        actionName: isCreated ? 'Company Created' : 'Company Updated',
-        actionDate: new Date(isCreated ? company.createdAt : company.updatedAt) - 2000,
+        actionName: isCreated ? 'Meeting Created' : 'Meeting Updated',
+        actionDate: new Date(isCreated ? meeting.createdAt : meeting.updatedAt) - 2000,
         ...actionTemplate
       });
     });
@@ -140,7 +134,7 @@ const processMeetings = async (domain, hubId, q) => {
     }
   }
 
-  account.lastPulledDates.companies = now;
+  account.lastPulledDates.meetings = now;
   await saveDomain(domain);
 
   return true;
