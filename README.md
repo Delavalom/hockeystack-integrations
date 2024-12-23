@@ -41,10 +41,44 @@ Disclaimer: You'll primarily (but not only) work in the `worker.js` file. The co
 
 ## How I would improve this project:
 
-1. In terms of code quality and readability:
+### 1 - In terms of code quality and readability:
 
+We break down the logic into smaller, more focused files to improve clarity and separation of concerns. I would improve `Error Handling` introducing a more structured error-handling approach for robustness. For common logic such as API requests and token refreshing is centralized to avoid repetition. Unified the data processing for contacts, companies, and meetings to a reusable function.
 
-2. Project architecture:
+This is how the architecture would look like:
 
+```txt
+src/
+  ├── config/
+  │   └── constants.js  # Constants like API credentials and configuration
+  ├── hubspot/
+  │   ├── api.js       # HubSpot API client setup and helper functions
+  │   ├── token.js     # Token management and refresh logic
+  │   └── pullData.js  # Main logic for pulling data from HubSpot
+  ├── queue/
+  │   └── index.js     # Queue management logic
+  ├── utils/
+  │   └── helpers.js   # Helper functions like filtering null values
+  ├── models/
+  │   └── Domain.js    # Database models
+  └── app.js         # Main entry point
+```
 
-3. Especially code performance:
+### 2 - Project architecture:
+
+I would implement this project architecture:
+
+![diagram](/assets/image.png)
+
+By utilizing two separate queues, I ensure that one queue is dedicated to processing tasks while the other handles retries. While queues can inherently include retry logic, separating these responsibilities allows the retry mechanism to be decoupled from the processing code. This separation simplifies debugging, making it easier to trace and resolve issues.
+
+This improvement aligns with our goal of enhancing debugging tools to enable faster iteration, especially in a startup environment where quick issue identification and resolution are critical. By putting the right mechanisms in place, we can maintain agility and ensure smoother operations as we scale.
+
+### 3 - Especially code performance:
+
+The architecture I have implemented for the queue is designed to optimize processing for calls that successfully complete without failures. When working to improve performance with third-party vendors, our options are often limited. However, we can enhance efficiency by leveraging a worker queue, enabling parallel processing, and aggregating domain data before saving—similar to a fan-out, fan-in pattern. Additionally, using a separate server written in Golang, rather than JavaScript, can further improve performance with easy use of multi-threads.
+Here’s an improved version of your text:
+
+## Final Thoughts
+
+Instead of spending time implementing changes directly in the code, I chose to outline the improvement plans in this README. Given my limited time and context to fully explore how HubSpot behaves and how to integrate meetings processing, I hope this approach is clear and understandable. Thank you for taking the time to review it.
